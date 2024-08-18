@@ -13,6 +13,11 @@ use crate::StarkDomain;
 
 mod default;
 pub use default::DefaultTraceLde;
+use maybe_async::maybe_async;
+
+#[cfg(feature = "async")]
+use alloc::boxed::Box;
+
 
 // TRACE LOW DEGREE EXTENSION
 // ================================================================================================
@@ -23,6 +28,7 @@ pub use default::DefaultTraceLde;
 ///   will always be elements in the base field (even when an extension field is used).
 /// - Auxiliary segments: a list of 0 or more segments for traces generated after the prover
 ///   commits to the first trace segment. Currently, at most 1 auxiliary segment is possible.
+#[maybe_async]
 pub trait TraceLde<E: FieldElement>: Sync {
     /// The hash function used for building the Merkle tree commitments to trace segment LDEs.
     type HashFn: ElementHasher<BaseField = E::BaseField>;
@@ -42,7 +48,7 @@ pub trait TraceLde<E: FieldElement>: Sync {
     /// This function is expected to panic if any of the following are true:
     /// - the number of rows in the provided `aux_trace` does not match the main trace.
     /// - this segment would exceed the number of segments specified by the trace layout.
-    fn set_aux_trace(
+    async fn set_aux_trace(
         &mut self,
         aux_trace: &ColMatrix<E>,
         domain: &StarkDomain<E::BaseField>,

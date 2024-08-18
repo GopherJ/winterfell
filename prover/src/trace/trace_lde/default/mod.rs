@@ -7,13 +7,18 @@ use alloc::vec::Vec;
 
 use air::LagrangeKernelEvaluationFrame;
 use crypto::MerkleTree;
-use tracing::info_span;
+use tracing::{info_span, instrument};
 
 use super::{
     ColMatrix, ElementHasher, EvaluationFrame, FieldElement, Hasher, Queries, StarkDomain,
     TraceInfo, TraceLde, TracePolyTable,
 };
 use crate::{RowMatrix, DEFAULT_SEGMENT_WIDTH};
+
+#[cfg(feature = "async")]
+use alloc::boxed::Box;
+
+use maybe_async::maybe_async;
 
 #[cfg(test)]
 mod tests;
@@ -95,6 +100,7 @@ impl<E: FieldElement, H: ElementHasher<BaseField = E::BaseField>> DefaultTraceLd
     }
 }
 
+#[maybe_async]
 impl<E, H> TraceLde<E> for DefaultTraceLde<E, H>
 where
     E: FieldElement,
@@ -120,7 +126,8 @@ where
     /// This function will panic if any of the following are true:
     /// - the number of rows in the provided `aux_trace` does not match the main trace.
     /// - the auxiliary trace has been previously set already.
-    fn set_aux_trace(
+    #[instrument(skip_all)]
+    async fn set_aux_trace(
         &mut self,
         aux_trace: &ColMatrix<E>,
         domain: &StarkDomain<E::BaseField>,

@@ -332,15 +332,13 @@ pub trait Prover {
             let aux_segment_polys = {
                 // extend the auxiliary trace segment and build a Merkle tree from the extended
                 // trace
-                let span = info_span!("commit_to_aux_trace_segment").entered();
                 let (aux_segment_polys, aux_segment_root) =
-                    trace_lde.set_aux_trace(&aux_trace, &domain);
+                    trace_lde.set_aux_trace(&aux_trace, &domain).await;
 
                 // commit to the LDE of the extended auxiliary trace segment by writing the root of
                 // its Merkle tree into the channel
                 channel.commit_trace(aux_segment_root);
 
-                drop(span);
                 aux_segment_polys
             };
 
