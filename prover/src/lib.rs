@@ -177,11 +177,11 @@ pub trait Prover {
     ///
     /// Returns a tuple containing a [TracePolyTable] with the trace polynomials for the main trace
     /// and a new [TraceLde] instance from which the LDE and trace commitments can be obtained.
-    async fn new_trace_lde<E>(
+    async fn new_trace_lde<'a, E>(
         &self,
-        trace_info: &TraceInfo,
-        main_trace: &ColMatrix<Self::BaseField>,
-        domain: &StarkDomain<Self::BaseField>,
+        trace_info: &'a TraceInfo,
+        main_trace: &'a ColMatrix<Self::BaseField>,
+        domain: &'a StarkDomain<Self::BaseField>,
     ) -> (Self::TraceLde<E>, TracePolyTable<E>)
     where
         E: FieldElement<BaseField = Self::BaseField>;
